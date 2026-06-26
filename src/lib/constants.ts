@@ -39,15 +39,17 @@ export const ROUTES = {
 // Users assign a color tag when labelling a bank statement.
 // Colors chosen to be distinct on both dark and light surfaces.
 export const STATEMENT_COLORS = [
-  { label: 'Green',   value: '#00A86B' },
-  { label: 'Blue',    value: '#1E3A5F' },
-  { label: 'Orange',  value: '#F97316' },
-  { label: 'Purple',  value: '#8B5CF6' },
-  { label: 'Pink',    value: '#EC4899' },
-  { label: 'Cyan',    value: '#06B6D4' },
-  { label: 'Yellow',  value: '#EAB308' },
-  { label: 'Gray',    value: '#64748B' },
+  { label: 'Green',   value: 'var(--color-statement-green)' },
+  { label: 'Blue',    value: 'var(--color-statement-blue)' },
+  { label: 'Orange',  value: 'var(--color-statement-orange)' },
+  { label: 'Purple',  value: 'var(--color-statement-purple)' },
+  { label: 'Pink',    value: 'var(--color-statement-pink)' },
+  { label: 'Cyan',    value: 'var(--color-statement-cyan)' },
+  { label: 'Yellow',  value: 'var(--color-statement-yellow)' },
+  { label: 'Gray',    value: 'var(--color-statement-gray)' },
 ] as const
+
+export const STATEMENT_COLOR_VALUES = STATEMENT_COLORS.map(({ value }) => value)
 
 // ── Date filter presets ────────────────────────────────────
 export const DATE_FILTER_PRESETS = [

@@ -83,7 +83,7 @@ async function parseSpreadsheet(file: File): Promise<GenericParseResult> {
     raw:      false,
   }) as string[][]
 
-  return extractFromGrid(raw, file.name)
+  return extractFromGrid(raw)
 }
 
 // ════════════════════════════════════════════════════════════
@@ -125,7 +125,7 @@ async function parsePDF(file: File): Promise<GenericParseResult> {
   // Group items into rows by (page, y) proximity
   const grid = groupPdfItemsIntoRows(items)
 
-  return extractFromGrid(grid, file.name)
+  return extractFromGrid(grid)
 }
 
 /**
@@ -179,7 +179,7 @@ function groupPdfItemsIntoRows(
  * 3. Falls back to heuristic column detection if bank is unknown
  * 4. Extracts RawTransaction[] from all data rows
  */
-function extractFromGrid(grid: string[][], _fileName: string): GenericParseResult {
+function extractFromGrid(grid: string[][]): GenericParseResult {
   // Find the header row — skip blank leading rows and bank letterheads
   const headerRowIdx = findHeaderRow(grid)
 
@@ -369,8 +369,8 @@ function extractRows(
     if (isSubtotalRow(row)) continue
 
     // Resolve amount: either from split debit/credit cols or single amount col
-    let amount = ''
-    let type   = ''
+    let amount: string
+    let type: string
 
     if (debitIdx >= 0 && creditIdx >= 0) {
       const debitVal  = cell(debitIdx).replace(/[,\s]/g, '')

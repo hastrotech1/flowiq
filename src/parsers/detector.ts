@@ -207,15 +207,27 @@ const BANK_SIGNATURES: Array<{
  */
 export function detectBankFormat(headers: string[]): BankFormat | null {
   const normalised = headers.map((h) => h.toLowerCase().trim())
-
-  for (const entry of BANK_SIGNATURES) {
-    const allMatch = entry.signatures.every((sig) =>
-      normalised.some((h) => h.includes(sig))
+  const scored = BANK_SIGNATURES.map((entry) => {
+    const matched = entry.signatures.filter((sig) =>
+      normalised.some((h) => h === sig || h.includes(sig)),
     )
-    if (allMatch) return entry.format
-  }
+    const exactMatches = entry.signatures.filter((sig) =>
+      normalised.some((h) => h === sig),
+    ).length
 
-  return null
+    return {
+      entry,
+      matchedCount: matched.length,
+      score: matched.length * 10 + exactMatches,
+    }
+  })
+    .filter(({ matchedCount, entry }) => matchedCount === entry.signatures.length)
+    .sort((a, b) => b.score - a.score)
+
+  if (scored.length === 0) return null
+  if (scored.length > 1 && scored[0].score === scored[1].score) return null
+
+  return scored[0].entry.format
 }
 
 /**

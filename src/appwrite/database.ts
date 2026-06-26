@@ -1,10 +1,10 @@
-import { ID, Query } from 'appwrite'
-import { databases } from './client'
-import { APPWRITE_CONFIG, TRANSACTIONS_PAGE_SIZE } from '@/lib/constants'
-import type { Statement, Transaction } from '@/types'
+import { ID, Query } from "appwrite";
+import { databases } from "./client";
+import { APPWRITE_CONFIG, TRANSACTIONS_PAGE_SIZE } from "@/lib/constants";
+import type { Statement, Transaction } from "@/types";
 
-const DB  = APPWRITE_CONFIG.databaseId
-const COL = APPWRITE_CONFIG.collections
+const DB = APPWRITE_CONFIG.databaseId;
+const COL = APPWRITE_CONFIG.collections;
 
 // ════════════════════════════════════════════════════════════
 // STATEMENT OPERATIONS
@@ -18,15 +18,15 @@ const COL = APPWRITE_CONFIG.collections
  * @returns The created Appwrite document
  */
 export async function createStatement(
-  data: Omit<Statement, 'id'>
+  data: Omit<Statement, "id">,
 ): Promise<Statement> {
   const doc = await databases.createDocument(
     DB,
     COL.statements,
     ID.unique(),
     data,
-  )
-  return mapStatement(doc)
+  );
+  return mapStatement(doc);
 }
 
 /**
@@ -36,12 +36,23 @@ export async function createStatement(
  * @param userId - The Appwrite user $id
  */
 export async function fetchStatements(userId: string): Promise<Statement[]> {
-  const res = await databases.listDocuments(DB, COL.statements, [
-    Query.equal('userId', userId),
-    Query.orderDesc('uploadedAt'),
-    Query.limit(100),
-  ])
-  return res.documents.map(mapStatement)
+  const allStatements: Statement[] = [];
+  let offset = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    const res = await databases.listDocuments(DB, COL.statements, [
+      Query.equal("userId", userId),
+      Query.orderDesc("uploadedAt"),
+      Query.limit(TRANSACTIONS_PAGE_SIZE),
+      Query.offset(offset),
+    ]);
+    allStatements.push(...res.documents.map(mapStatement));
+    offset += TRANSACTIONS_PAGE_SIZE;
+    hasMore = res.documents.length === TRANSACTIONS_PAGE_SIZE;
+  }
+
+  return allStatements;
 }
 
 /**
@@ -54,10 +65,27 @@ export async function fetchStatements(userId: string): Promise<Statement[]> {
  */
 export async function updateStatement(
   statementId: string,
-  updates: Partial<Pick<Statement, 'bankName' | 'colorTag' | 'isCategorized' | 'transactionCount'>>
+  updates: Partial<
+    Pick<
+      Statement,
+      | "bankName"
+      | "colorTag"
+      | "isCategorized"
+      | "transactionCount"
+      | "periodStart"
+      | "periodEnd"
+      | "importStatus"
+      | "failureReason"
+    >
+  >,
 ): Promise<Statement> {
-  const doc = await databases.updateDocument(DB, COL.statements, statementId, updates)
-  return mapStatement(doc)
+  const doc = await databases.updateDocument(
+    DB,
+    COL.statements,
+    statementId,
+    updates,
+  );
+  return mapStatement(doc);
 }
 
 /**
@@ -68,7 +96,7 @@ export async function updateStatement(
  * @param statementId - Appwrite document ID of the statement
  */
 export async function deleteStatement(statementId: string): Promise<void> {
-  await databases.deleteDocument(DB, COL.statements, statementId)
+  await databases.deleteDocument(DB, COL.statements, statementId);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -83,21 +111,21 @@ export async function deleteStatement(statementId: string): Promise<void> {
  * @param transactions - Array of transactions to persist
  */
 export async function saveTransactions(
-  transactions: Omit<Transaction, 'id'>[]
+  transactions: Omit<Transaction, "id">[],
 ): Promise<void> {
-  const CHUNK_SIZE = 25
+  const CHUNK_SIZE = 25;
 
   for (let i = 0; i < transactions.length; i += CHUNK_SIZE) {
-    const chunk = transactions.slice(i, i + CHUNK_SIZE)
+    const chunk = transactions.slice(i, i + CHUNK_SIZE);
     await Promise.all(
       chunk.map((tx) =>
         databases.createDocument(DB, COL.transactions, ID.unique(), {
           ...tx,
           // Dates must be stored as ISO strings in Appwrite
-          date:      tx.date instanceof Date ? tx.date.toISOString() : tx.date,
-        })
-      )
-    )
+          date: tx.date instanceof Date ? tx.date.toISOString() : tx.date,
+        }),
+      ),
+    );
   }
 }
 
@@ -110,33 +138,33 @@ export async function saveTransactions(
  */
 export async function fetchTransactions(
   userId: string,
-  statementIds?: string[]
+  statementIds?: string[],
 ): Promise<Transaction[]> {
-  const allTransactions: Transaction[] = []
-  let   offset = 0
-  let   hasMore = true
+  const allTransactions: Transaction[] = [];
+  let offset = 0;
+  let hasMore = true;
 
   while (hasMore) {
     const queries = [
-      Query.equal('userId', userId),
-      Query.orderDesc('date'),
+      Query.equal("userId", userId),
+      Query.orderDesc("date"),
       Query.limit(TRANSACTIONS_PAGE_SIZE),
       Query.offset(offset),
-    ]
+    ];
 
     // Optionally scope to specific statements
     if (statementIds && statementIds.length > 0) {
-      queries.push(Query.equal('statementId', statementIds))
+      queries.push(Query.equal("statementId", statementIds));
     }
 
-    const res = await databases.listDocuments(DB, COL.transactions, queries)
-    allTransactions.push(...res.documents.map(mapTransaction))
+    const res = await databases.listDocuments(DB, COL.transactions, queries);
+    allTransactions.push(...res.documents.map(mapTransaction));
 
-    offset  += TRANSACTIONS_PAGE_SIZE
-    hasMore  = res.documents.length === TRANSACTIONS_PAGE_SIZE
+    offset += TRANSACTIONS_PAGE_SIZE;
+    hasMore = res.documents.length === TRANSACTIONS_PAGE_SIZE;
   }
 
-  return allTransactions
+  return allTransactions;
 }
 
 /**
@@ -145,24 +173,28 @@ export async function fetchTransactions(
  *
  * @param statementId - The parent statement's Appwrite ID
  */
-export async function deleteStatementTransactions(statementId: string): Promise<void> {
-  let hasMore = true
+export async function deleteStatementTransactions(
+  statementId: string,
+): Promise<void> {
+  let hasMore = true;
 
   while (hasMore) {
     const res = await databases.listDocuments(DB, COL.transactions, [
-      Query.equal('statementId', statementId),
+      Query.equal("statementId", statementId),
       Query.limit(100),
-    ])
+    ]);
 
-    if (res.documents.length === 0) { hasMore = false; break }
+    if (res.documents.length === 0) {
+      break;
+    }
 
     await Promise.all(
       res.documents.map((doc) =>
-        databases.deleteDocument(DB, COL.transactions, doc.$id)
-      )
-    )
+        databases.deleteDocument(DB, COL.transactions, doc.$id),
+      ),
+    );
 
-    hasMore = res.documents.length === 100
+    hasMore = res.documents.length === 100;
   }
 }
 
@@ -173,16 +205,18 @@ export async function deleteStatementTransactions(statementId: string): Promise<
  * @param updates - Array of { id, normalizedCategory } pairs
  */
 export async function updateTransactionCategories(
-  updates: { id: string; normalizedCategory: string }[]
+  updates: { id: string; normalizedCategory: string }[],
 ): Promise<void> {
-  const CHUNK_SIZE = 25
+  const CHUNK_SIZE = 25;
   for (let i = 0; i < updates.length; i += CHUNK_SIZE) {
-    const chunk = updates.slice(i, i + CHUNK_SIZE)
+    const chunk = updates.slice(i, i + CHUNK_SIZE);
     await Promise.all(
       chunk.map(({ id, normalizedCategory }) =>
-        databases.updateDocument(DB, COL.transactions, id, { normalizedCategory })
-      )
-    )
+        databases.updateDocument(DB, COL.transactions, id, {
+          normalizedCategory,
+        }),
+      ),
+    );
   }
 }
 
@@ -197,18 +231,22 @@ export async function updateTransactionCategories(
  */
 function mapStatement(doc: Record<string, unknown>): Statement {
   return {
-    id:               doc.$id as string,
-    userId:           doc.userId as string,
-    bankName:         doc.bankName as string,
-    fileId:           doc.fileId as string,
-    fileName:         doc.fileName as string,
-    colorTag:         doc.colorTag as string,
-    uploadedAt:       doc.uploadedAt as string,
-    periodStart:      (doc.periodStart as string) ?? null,
-    periodEnd:        (doc.periodEnd as string)   ?? null,
+    id: doc.$id as string,
+    userId: doc.userId as string,
+    bankName: doc.bankName as string,
+    fileId: doc.fileId as string,
+    fileName: doc.fileName as string,
+    colorTag: doc.colorTag as string,
+    uploadedAt: doc.uploadedAt as string,
+    periodStart: (doc.periodStart as string) ?? null,
+    periodEnd: (doc.periodEnd as string) ?? null,
     transactionCount: doc.transactionCount as number,
-    isCategorized:    doc.isCategorized as boolean,
-  }
+    isCategorized: doc.isCategorized as boolean,
+    importStatus:
+      (doc.importStatus as Statement["importStatus"] | undefined) ??
+      "complete",
+    failureReason: (doc.failureReason as string | undefined) ?? null,
+  };
 }
 
 /**
@@ -217,17 +255,17 @@ function mapStatement(doc: Record<string, unknown>): Statement {
  */
 function mapTransaction(doc: Record<string, unknown>): Transaction {
   return {
-    id:                    doc.$id as string,
-    statementId:           doc.statementId as string,
-    userId:                doc.userId as string,
-    date:                  new Date(doc.date as string),
-    amount:                doc.amount as number,
-    type:                  doc.type as 'debit' | 'credit',
-    narration:             doc.narration as string,
-    normalizedCategory:    (doc.normalizedCategory as string)  ?? null,
-    balance:               (doc.balance as number)             ?? null,
+    id: doc.$id as string,
+    statementId: doc.statementId as string,
+    userId: doc.userId as string,
+    date: new Date(doc.date as string),
+    amount: doc.amount as number,
+    type: doc.type as "debit" | "credit",
+    narration: doc.narration as string,
+    normalizedCategory: (doc.normalizedCategory as string) ?? null,
+    balance: (doc.balance as number) ?? null,
     isInterAccountTransfer: doc.isInterAccountTransfer as boolean,
-    transferPairId:         (doc.transferPairId as string)     ?? null,
-    createdAt:              doc.$createdAt as string,
-  }
+    transferPairId: (doc.transferPairId as string) ?? null,
+    createdAt: doc.$createdAt as string,
+  };
 }

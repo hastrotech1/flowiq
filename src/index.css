@@ -9,44 +9,64 @@
 ──────────────────────────────────────────────────────────── */
 :root {
   /* Brand greens */
-  --color-green-primary:  #00A86B;
-  --color-green-accent:   #00C27A;
-  --color-green-deep:     #007A4D;
-  --color-green-muted:    #D1FAE5;
+  --color-green-primary: #00a86b;
+  --color-green-accent: #00c27a;
+  --color-green-deep: #007a4d;
+  --color-green-muted: #d1fae5;
 
   /* App shell */
-  --color-shell:          #060D09;
-  --color-shell-surface:  #0F1A12;
-  --color-shell-border:   #1A2E1F;
+  --color-shell: #060d09;
+  --color-shell-surface: #0f1a12;
+  --color-shell-border: #1a2e1f;
 
   /* Data viz */
-  --color-data-primary:   #1E3A5F;
-  --color-data-secondary: #64748B;
-  --color-data-positive:  #00C27A;
-  --color-data-alert:     #EF4444;
-  --color-data-warning:   #F97316;
-  --color-data-neutral:   #94A3B8;
+  --color-data-primary: #1e3a5f;
+  --color-data-secondary: #64748b;
+  --color-data-positive: #00c27a;
+  --color-data-alert: #ef4444;
+  --color-data-warning: #f97316;
+  --color-data-neutral: #94a3b8;
 
   /* Light surfaces */
-  --color-surface:        #FFFFFF;
-  --color-surface-gray:   #F8FAFC;
-  --color-surface-border: #E2E8F0;
-  --color-surface-muted:  #F1F5F9;
+  --color-surface: #ffffff;
+  --color-surface-gray: #f8fafc;
+  --color-surface-border: #e2e8f0;
+  --color-surface-muted: #f1f5f9;
+  --color-text-body: #0f172a;
+  --color-statement-green: var(--color-green-primary);
+  --color-statement-blue: var(--color-data-primary);
+  --color-statement-orange: var(--color-data-warning);
+  --color-statement-purple: #8b5cf6;
+  --color-statement-pink: #ec4899;
+  --color-statement-cyan: #06b6d4;
+  --color-statement-yellow: #eab308;
+  --color-statement-gray: var(--color-data-secondary);
+  --color-google-blue: #4285f4;
+  --color-google-green: #34a853;
+  --color-google-yellow: #fbbc05;
+  --color-google-red: #ea4335;
+  --color-active-statement-overlay: color-mix(
+    in srgb,
+    var(--color-surface) 53%,
+    transparent
+  );
 
   /* Typography */
-  --font-sans: 'Poppins', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: "Poppins", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
 
   /* Safe area insets for notched phones */
-  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-left:   env(safe-area-inset-left, 0px);
-  --safe-right:  env(safe-area-inset-right, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
 }
 
 /* ── Base resets ─────────────────────────────────────────── */
 @layer base {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     box-sizing: border-box;
   }
 
@@ -60,12 +80,17 @@
 
   body {
     font-family: var(--font-sans);
+    margin: 0;
     background-color: var(--color-surface-gray);
-    color: #0F172A;
+    color: var(--color-text-body);
     /* Prevent horizontal overflow on mobile */
     overflow-x: hidden;
     /* Remove iOS tap highlight */
     -webkit-tap-highlight-color: transparent;
+  }
+
+  #root {
+    min-height: 100dvh;
   }
 
   /* Number/amount elements use mono font for alignment */
@@ -104,22 +129,32 @@
 
   /* Green text gradient — used on key metrics */
   .text-gradient-green {
-    background: linear-gradient(135deg, var(--color-green-primary), var(--color-green-accent));
+    background: linear-gradient(
+      135deg,
+      var(--color-green-primary),
+      var(--color-green-accent)
+    );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   /* Debit amount — always red */
-  .amount-debit  { color: var(--color-data-alert); }
+  .amount-debit {
+    color: var(--color-data-alert);
+  }
 
   /* Credit amount — always green */
-  .amount-credit { color: var(--color-data-positive); }
+  .amount-credit {
+    color: var(--color-data-positive);
+  }
 
   /* Scrollbar hide for mobile-style scroll containers */
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }

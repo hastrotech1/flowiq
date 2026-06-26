@@ -75,7 +75,11 @@ export default function StatementFilter() {
             {/* Color dot */}
             <span
               className="w-1.5 h-1.5 rounded-full shrink-0"
-              style={{ backgroundColor: active ? '#ffffff88' : stmt.colorTag }}
+              style={{
+                backgroundColor: active
+                  ? 'var(--color-active-statement-overlay)'
+                  : stmt.colorTag,
+              }}
               aria-hidden="true"
             />
             {stmt.bankName}

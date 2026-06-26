@@ -104,6 +104,12 @@ export interface Statement {
 
   /** Whether AI categorisation has been run on this statement */
   isCategorized: boolean
+
+  /** Import lifecycle state for detecting incomplete uploads */
+  importStatus: 'pending' | 'complete' | 'failed'
+
+  /** User-facing failure reason when importStatus is failed */
+  failureReason: string | null
 }
 
 // ────────────────────────────────────────────────────────────

@@ -147,7 +147,7 @@ export function parseAmount(raw: string): number | null {
   }
 
   // Remove any remaining non-numeric chars except dot and minus
-  cleaned = cleaned.replace(/[^0-9.\-]/g, '')
+  cleaned = cleaned.replace(/[^0-9.-]/g, '')
 
   const value = parseFloat(cleaned)
   if (isNaN(value)) return null
@@ -214,7 +214,7 @@ function parseBalance(raw: string | null): number | null {
   const isNegative = cleaned.startsWith('(') && cleaned.endsWith(')')
   const numeric    = isNegative
     ? cleaned.slice(1, -1)
-    : cleaned.replace(/[^0-9.\-]/g, '')
+    : cleaned.replace(/[^0-9.-]/g, '')
 
   const value = parseFloat(numeric)
   return isNaN(value) ? null : (isNegative ? -Math.abs(value) : value)

@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
-import BottomNav from './BottomNav'
-import Sidebar from './Sidebar'
-import TopBar from './TopBar'
-import { cn } from '@/lib/utils'
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import BottomNav from "./BottomNav";
+import Sidebar from "./Sidebar";
+import TopBar from "./TopBar";
+import "./Layout.css";
 
 // ════════════════════════════════════════════════════════════
 // APP LAYOUT
@@ -13,13 +13,13 @@ import { cn } from '@/lib/utils'
 // ════════════════════════════════════════════════════════════
 
 interface AppLayoutProps {
-  children:  React.ReactNode
+  children: React.ReactNode;
   /** Page title shown in the TopBar */
-  title:     string
+  title: string;
   /** Optional right-side action slot in the TopBar */
-  action?:   React.ReactNode
+  action?: React.ReactNode;
   /** Hides the TopBar — used on pages with a custom hero header */
-  hideTopBar?: boolean
+  hideTopBar?: boolean;
 }
 
 /**
@@ -33,28 +33,28 @@ export default function AppLayout({
   action,
   hideTopBar = false,
 }: AppLayoutProps) {
-  const location = useLocation()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Close mobile sidebar on route change
   useEffect(() => {
-    setSidebarOpen(false)
-  }, [location.pathname])
+    const frame = requestAnimationFrame(() => setSidebarOpen(false));
+    return () => cancelAnimationFrame(frame);
+  }, [location.pathname]);
 
   // Close sidebar on desktop resize (prevents stale open state)
   useEffect(() => {
     const onResize = () => {
-      if (window.innerWidth >= 1024) setSidebarOpen(false)
-    }
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [])
+      if (window.innerWidth >= 1024) setSidebarOpen(false);
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   return (
-    <div className="flex h-[100dvh] bg-surface-gray overflow-hidden">
-
+    <div className="layout-container">
       {/* ── Desktop Sidebar (lg+) ── */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:shrink-0">
+      <aside className="layout-sidebar">
         <Sidebar />
       </aside>
 
@@ -63,20 +63,19 @@ export default function AppLayout({
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+            className="layout-sidebar-mobile open"
             onClick={() => setSidebarOpen(false)}
             aria-hidden="true"
           />
           {/* Drawer */}
-          <aside className="fixed inset-y-0 left-0 z-50 w-72 lg:hidden animate-slide-in-right">
+          <aside className="layout-sidebar-drawer">
             <Sidebar onClose={() => setSidebarOpen(false)} />
           </aside>
         </>
       )}
 
       {/* ── Main content column ── */}
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-
+      <div className="layout-content">
         {/* TopBar */}
         {!hideTopBar && (
           <TopBar
@@ -87,15 +86,7 @@ export default function AppLayout({
         )}
 
         {/* Scrollable page content */}
-        <main
-          className={cn(
-            'flex-1 overflow-y-auto overflow-x-hidden',
-            // Bottom padding accounts for the mobile BottomNav height + safe area
-            'pb-[calc(72px+env(safe-area-inset-bottom))] lg:pb-6',
-            'px-4 lg:px-6 pt-4 lg:pt-6',
-          )}
-          id="main-content"
-        >
+        <main className="layout-main" id="main-content">
           {children}
         </main>
 
@@ -103,5 +94,5 @@ export default function AppLayout({
         <BottomNav />
       </div>
     </div>
-  )
+  );
 }
