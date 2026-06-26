@@ -1,23 +1,36 @@
-import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  Wallet, TrendingDown, TrendingUp, Activity,
-  ArrowRight, RefreshCw, Upload,
-} from 'lucide-react'
-import AppLayout from '@/components/layout/AppLayout'
-import PageWrapper, { SectionCard, SectionHeader } from '@/components/layout/PageWrapper'
-import StatCard from '@/components/ui/StatCard'
-import EmptyState from '@/components/ui/EmptyState'
-import { StatCardSkeleton, ChartSkeleton, TransactionRowSkeleton } from '@/components/ui/Skeleton'
-import DateFilterBar from '@/components/filters/DateFilterBar'
-import SpendTrendChart from '@/components/charts/SpendTrendChart'
-import MonthlyBarChart from '@/components/charts/MonthlyBarChart'
-import CategoryDonutChart from '@/components/charts/CategoryDonutChart'
-import RecentTransactionList from '@/components/transactions/RecentTransactionList'
-import { useStatements } from '@/hooks/useStatements'
-import { useDashboard } from '@/hooks/useDashboard'
-import { formatNaira, formatNairaCompact } from '@/lib/utils'
-import { ROUTES } from '@/lib/constants'
+  Wallet,
+  TrendingDown,
+  TrendingUp,
+  Activity,
+  ArrowRight,
+  RefreshCw,
+  Upload,
+} from "lucide-react";
+import AppLayout from "@/components/layout/AppLayout";
+import PageWrapper, {
+  SectionCard,
+  SectionHeader,
+} from "@/components/layout/PageWrapper";
+import StatCard from "@/components/ui/StatCard";
+import EmptyState from "@/components/ui/EmptyState";
+import {
+  StatCardSkeleton,
+  ChartSkeleton,
+  TransactionRowSkeleton,
+} from "@/components/ui/Skeleton";
+import DateFilterBar from "@/components/filters/DateFilterBar";
+import SpendTrendChart from "@/components/charts/SpendTrendChart";
+import MonthlyBarChart from "@/components/charts/MonthlyBarChart";
+import CategoryDonutChart from "@/components/charts/CategoryDonutChart";
+import RecentTransactionList from "@/components/transactions/RecentTransactionList";
+import ErrorBoundary from "@/components/ui/ErrorBoundary";
+import { useStatements } from "@/hooks/useStatements";
+import { useDashboard } from "@/hooks/useDashboard";
+import { formatNaira, formatNairaCompact } from "@/lib/utils";
+import { ROUTES } from "@/lib/constants";
 
 /**
  * Dashboard page — the home screen after login.
@@ -35,8 +48,8 @@ import { ROUTES } from '@/lib/constants'
  * If no statements are uploaded, shows an onboarding empty state.
  */
 export default function DashboardPage() {
-  const navigate = useNavigate()
-  const { loadAll }        = useStatements()
+  const navigate = useNavigate();
+  const { loadAll } = useStatements();
   const {
     isLoading,
     summary,
@@ -49,12 +62,14 @@ export default function DashboardPage() {
     recentTransactions,
     statements,
     totalTransactions,
-  } = useDashboard()
+  } = useDashboard();
 
   // Load all data on mount (no-op if already loaded)
-  useEffect(() => { loadAll() }, [loadAll])
+  useEffect(() => {
+    loadAll();
+  }, [loadAll]);
 
-  const hasData = statements.length > 0
+  const hasData = statements.length > 0;
 
   return (
     <AppLayout
@@ -72,7 +87,6 @@ export default function DashboardPage() {
       }
     >
       <PageWrapper>
-
         {/* ── Date filter bar ── */}
         {hasData && <DateFilterBar />}
 
@@ -97,44 +111,48 @@ export default function DashboardPage() {
 
         {/* ── Summary stat cards (2×2 grid) ── */}
         {(isLoading || hasData) && (
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            {isLoading ? (
-              [1,2,3,4].map((i) => <StatCardSkeleton key={i} />)
-            ) : (
-              <>
-                <StatCard
-                  label="Total Spent"
-                  value={formatNairaCompact(summary.totalDebits)}
-                  subValue={`${summary.transactionCount} transactions`}
-                  trend={spendTrend !== 0 ? -spendTrend : undefined}
-                  variant="debit"
-                  icon={<TrendingDown size={16} />}
-                  onClick={() => navigate(ROUTES.transactions)}
-                />
-                <StatCard
-                  label="Total Received"
-                  value={formatNairaCompact(summary.totalCredits)}
-                  subValue="All credits"
-                  variant="credit"
-                  icon={<TrendingUp size={16} />}
-                />
-                <StatCard
-                  label="Net Flow"
-                  value={formatNairaCompact(Math.abs(summary.netFlow))}
-                  subValue={summary.netFlow >= 0 ? 'Net positive' : 'Net negative'}
-                  variant={summary.netFlow >= 0 ? 'credit' : 'debit'}
-                  icon={<Activity size={16} />}
-                />
-                <StatCard
-                  label="Transactions"
-                  value={totalTransactions.toLocaleString()}
-                  subValue={`${statements.length} account${statements.length !== 1 ? 's' : ''}`}
-                  variant="neutral"
-                  icon={<Wallet size={16} />}
-                />
-              </>
-            )}
-          </div>
+          <ErrorBoundary context="Dashboard stat cards">
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              {isLoading ? (
+                [1, 2, 3, 4].map((i) => <StatCardSkeleton key={i} />)
+              ) : (
+                <>
+                  <StatCard
+                    label="Total Spent"
+                    value={formatNairaCompact(summary.totalDebits)}
+                    subValue={`${summary.transactionCount} transactions`}
+                    trend={spendTrend !== 0 ? -spendTrend : undefined}
+                    variant="debit"
+                    icon={<TrendingDown size={16} />}
+                    onClick={() => navigate(ROUTES.transactions)}
+                  />
+                  <StatCard
+                    label="Total Received"
+                    value={formatNairaCompact(summary.totalCredits)}
+                    subValue="All credits"
+                    variant="credit"
+                    icon={<TrendingUp size={16} />}
+                  />
+                  <StatCard
+                    label="Net Flow"
+                    value={formatNairaCompact(Math.abs(summary.netFlow))}
+                    subValue={
+                      summary.netFlow >= 0 ? "Net positive" : "Net negative"
+                    }
+                    variant={summary.netFlow >= 0 ? "credit" : "debit"}
+                    icon={<Activity size={16} />}
+                  />
+                  <StatCard
+                    label="Transactions"
+                    value={totalTransactions.toLocaleString()}
+                    subValue={`${statements.length} account${statements.length !== 1 ? "s" : ""}`}
+                    variant="neutral"
+                    icon={<Wallet size={16} />}
+                  />
+                </>
+              )}
+            </div>
+          </ErrorBoundary>
         )}
 
         {/* ── Spend trend chart ── */}
@@ -144,31 +162,44 @@ export default function DashboardPage() {
               title="Spend Trend"
               subtitle="Daily debits and credits over the selected period"
             />
-            {isLoading
-              ? <ChartSkeleton height={220} />
-              : dailyAggregates.length === 0
-                ? <EmptyState compact title="No data" description="No transactions in this period." />
-                : <SpendTrendChart data={dailyAggregates} height={220} />
-            }
+            {isLoading ? (
+              <ChartSkeleton height={220} />
+            ) : dailyAggregates.length === 0 ? (
+              <EmptyState
+                compact
+                title="No data"
+                description="No transactions in this period."
+              />
+            ) : (
+              <ErrorBoundary context="Dashboard spend trend">
+                <SpendTrendChart data={dailyAggregates} height={220} />
+              </ErrorBoundary>
+            )}
           </SectionCard>
         )}
 
         {/* ── Monthly comparison + Category donut (side-by-side on lg) ── */}
         {(isLoading || hasData) && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-6">
-
             {/* Monthly bar chart */}
             <SectionCard>
               <SectionHeader
                 title="Monthly Breakdown"
                 subtitle="Spent vs received by month"
               />
-              {isLoading
-                ? <ChartSkeleton height={220} />
-                : monthlyAggregates.length === 0
-                  ? <EmptyState compact title="No data" description="No monthly data available." />
-                  : <MonthlyBarChart data={monthlyAggregates} height={220} />
-              }
+              {isLoading ? (
+                <ChartSkeleton height={220} />
+              ) : monthlyAggregates.length === 0 ? (
+                <EmptyState
+                  compact
+                  title="No data"
+                  description="No monthly data available."
+                />
+              ) : (
+                <ErrorBoundary context="Dashboard monthly breakdown">
+                  <MonthlyBarChart data={monthlyAggregates} height={220} />
+                </ErrorBoundary>
+              )}
             </SectionCard>
 
             {/* Category donut */}
@@ -187,34 +218,42 @@ export default function DashboardPage() {
                   )
                 }
               />
-              {isLoading
-                ? <ChartSkeleton height={200} />
-                : categoryBreakdown.length === 0
-                  ? <EmptyState compact title="No categories yet"
-                      description="AI categorisation runs after upload. Try refreshing." />
-                  : <CategoryDonutChart data={categoryBreakdown} height={180} />
-              }
+              {isLoading ? (
+                <ChartSkeleton height={200} />
+              ) : categoryBreakdown.length === 0 ? (
+                <EmptyState
+                  compact
+                  title="No categories yet"
+                  description="AI categorisation runs after upload. Try refreshing."
+                />
+              ) : (
+                <ErrorBoundary context="Dashboard category donut">
+                  <CategoryDonutChart data={categoryBreakdown} height={180} />
+                </ErrorBoundary>
+              )}
             </SectionCard>
           </div>
         )}
 
         {/* ── Averages row ── */}
-        {!isLoading && hasData && (avgDailySpend > 0 || avgMonthlySpend > 0) && (
-          <div className="grid grid-cols-2 gap-3">
-            <StatCard
-              label="Avg Daily Spend"
-              value={formatNairaCompact(avgDailySpend)}
-              subValue={formatNaira(avgDailySpend)}
-              variant="neutral"
-            />
-            <StatCard
-              label="Avg Monthly Spend"
-              value={formatNairaCompact(avgMonthlySpend)}
-              subValue={formatNaira(avgMonthlySpend)}
-              variant="neutral"
-            />
-          </div>
-        )}
+        {!isLoading &&
+          hasData &&
+          (avgDailySpend > 0 || avgMonthlySpend > 0) && (
+            <div className="grid grid-cols-2 gap-3">
+              <StatCard
+                label="Avg Daily Spend"
+                value={formatNairaCompact(avgDailySpend)}
+                subValue={formatNaira(avgDailySpend)}
+                variant="neutral"
+              />
+              <StatCard
+                label="Avg Monthly Spend"
+                value={formatNairaCompact(avgMonthlySpend)}
+                subValue={formatNaira(avgMonthlySpend)}
+                variant="neutral"
+              />
+            </div>
+          )}
 
         {/* ── Recent transactions ── */}
         {(isLoading || hasData) && (
@@ -236,7 +275,9 @@ export default function DashboardPage() {
             />
             {isLoading ? (
               <div>
-                {[1,2,3,4,5].map((i) => <TransactionRowSkeleton key={i} />)}
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <TransactionRowSkeleton key={i} />
+                ))}
               </div>
             ) : recentTransactions.length === 0 ? (
               <EmptyState
@@ -245,12 +286,13 @@ export default function DashboardPage() {
                 description="No transactions match the current filters."
               />
             ) : (
-              <RecentTransactionList transactions={recentTransactions} />
+              <ErrorBoundary context="Dashboard recent transactions">
+                <RecentTransactionList transactions={recentTransactions} />
+              </ErrorBoundary>
             )}
           </SectionCard>
         )}
-
       </PageWrapper>
     </AppLayout>
-  )
+  );
 }

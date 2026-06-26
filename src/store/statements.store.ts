@@ -40,7 +40,10 @@ export const useStatementsStore = create<StatementsState>((set) => ({
   /** Appends a newly uploaded statement and auto-activates it */
   addStatement: (statement) =>
     set((state) => ({
-      statements: [statement, ...state.statements],
+      statements: [
+        statement,
+        ...state.statements.filter((s) => s.id !== statement.id),
+      ],
       activeIds:  new Set([...state.activeIds, statement.id]),
     })),
 
@@ -67,7 +70,11 @@ export const useStatementsStore = create<StatementsState>((set) => ({
   toggleActive: (id) =>
     set((state) => {
       const activeIds = new Set(state.activeIds)
-      activeIds.has(id) ? activeIds.delete(id) : activeIds.add(id)
+      if (activeIds.has(id)) {
+        activeIds.delete(id)
+      } else {
+        activeIds.add(id)
+      }
       return { activeIds }
     }),
 

@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
+import { STATEMENT_COLOR_VALUES } from './constants'
 
 /**
  * Merges Tailwind CSS classes safely, resolving conflicts.
@@ -75,15 +76,11 @@ export function formatNarration(narration: string | null | undefined): string {
  * Used to assign consistent colors to narration categories.
  */
 export function stringToColor(str: string): string {
-  const palette = [
-    '#00A86B', '#1E3A5F', '#F97316', '#8B5CF6',
-    '#EC4899', '#06B6D4', '#EAB308', '#64748B',
-  ]
   let hash = 0
   for (let i = 0; i < str.length; i++) {
     hash = str.charCodeAt(i) + ((hash << 5) - hash)
   }
-  return palette[Math.abs(hash) % palette.length]
+  return STATEMENT_COLOR_VALUES[Math.abs(hash) % STATEMENT_COLOR_VALUES.length]
 }
 
 /**

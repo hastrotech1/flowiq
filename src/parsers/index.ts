@@ -5,6 +5,8 @@ import type { Transaction, ColumnMapping } from '@/types'
 
 export type { GenericParseResult }
 export { parseStatementFile }
+export { detectBankFormat } from './detector'
+export { normalizeTransactions, parseAmount, parseDate, resolveType } from './normalizer'
 
 // ════════════════════════════════════════════════════════════
 // PIPELINE RESULT TYPE
