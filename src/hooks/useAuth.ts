@@ -7,13 +7,6 @@ import { useStatementsStore } from "@/store/statements.store";
 import { useFiltersStore } from "@/store/filters.store";
 import { ROUTES } from "@/lib/constants";
 
-const SESSION_RETRY_COUNT = 3;
-const SESSION_RETRY_DELAY_MS = 450;
-
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 /**
  * Primary auth hook. Handles:
  * - Initial session check on app mount
@@ -42,22 +35,10 @@ export function useAuth() {
 
     const checkSession = async () => {
       try {
-        const isProtectedPath = window.location.pathname !== ROUTES.auth;
-        let currentUser = await getCurrentUser();
-
-        // OAuth callback cookies can be momentarily unavailable on mobile.
-        // Retry briefly on protected routes before treating user as signed out.
-        if (!currentUser && isProtectedPath) {
-          for (let attempt = 0; attempt < SESSION_RETRY_COUNT; attempt++) {
-            await sleep(SESSION_RETRY_DELAY_MS);
-            currentUser = await getCurrentUser();
-            if (currentUser) break;
-          }
-        }
-
+        const currentUser = await getCurrentUser();
         setUser(currentUser);
-      } catch (err) {
-        console.error("Auth error:", err);
+      } catch {
+        // Network error or Appwrite misconfiguration
         setUser(null);
       } finally {
         setLoading(false);
