@@ -104,28 +104,50 @@ export async function deleteStatement(statementId: string): Promise<void> {
 // ════════════════════════════════════════════════════════════
 
 /**
- * Batch-saves parsed transactions to Appwrite.
- * Appwrite doesn't have a native batch write, so we chunk into
- * parallel Promise.all calls of 25 at a time to avoid rate limits.
+ * Batch-saves parsed transactions to Appwrite in chunks of 25.
  *
- * @param transactions - Array of transactions to persist
+ * Rollback guarantee: tracks every document ID that is successfully
+ * committed. If any chunk fails mid-import, ALL previously committed
+ * documents are deleted before re-throwing, leaving the DB clean.
+ * The statement record stays in `importStatus: "pending"` until
+ * `completeStatementImport` marks it "complete", so a partial write
+ * is always visible to the UI and can be retried or deleted.
+ *
+ * @param transactions - Normalised transaction rows to persist
+ * @returns Array of committed Appwrite document IDs
  */
 export async function saveTransactions(
   transactions: Omit<Transaction, "id">[],
-): Promise<void> {
+): Promise<string[]> {
   const CHUNK_SIZE = 25;
+  const committedIds: string[] = [];
 
-  for (let i = 0; i < transactions.length; i += CHUNK_SIZE) {
-    const chunk = transactions.slice(i, i + CHUNK_SIZE);
-    await Promise.all(
-      chunk.map((tx) =>
-        databases.createDocument(DB, COL.transactions, ID.unique(), {
-          ...tx,
-          // Dates must be stored as ISO strings in Appwrite
-          date: tx.date instanceof Date ? tx.date.toISOString() : tx.date,
-        }),
-      ),
-    );
+  try {
+    for (let i = 0; i < transactions.length; i += CHUNK_SIZE) {
+      const chunk = transactions.slice(i, i + CHUNK_SIZE);
+      const docs = await Promise.all(
+        chunk.map((tx) =>
+          databases.createDocument(DB, COL.transactions, ID.unique(), {
+            ...tx,
+            // Dates must be stored as ISO strings in Appwrite
+            date: tx.date instanceof Date ? tx.date.toISOString() : tx.date,
+          }),
+        ),
+      );
+      docs.forEach((doc) => committedIds.push(doc.$id));
+    }
+    return committedIds;
+  } catch (err) {
+    // Rollback: delete everything committed so far before surfacing the error.
+    // allSettled so a flaky delete does not mask the original failure.
+    if (committedIds.length > 0) {
+      await Promise.allSettled(
+        committedIds.map((id) =>
+          databases.deleteDocument(DB, COL.transactions, id),
+        ),
+      );
+    }
+    throw err;
   }
 }
 

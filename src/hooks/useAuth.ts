@@ -33,12 +33,30 @@ export function useAuth() {
   useEffect(() => {
     if (isChecked) return;
 
+    // const checkSession = async () => {
+    //   try {
+    //     const currentUser = await getCurrentUser()
+    //     setUser(currentUser)
+    //   } catch {
+    //     // Network error or Appwrite misconfiguration
+    //     setUser(null)
+    //   } finally {
+    //     setLoading(false)
+    //     setChecked(true)
+    //   }
+    // }
+
     const checkSession = async () => {
       try {
+        console.log("Checking session...");
+
         const currentUser = await getCurrentUser();
+
+        console.log("Current user:", currentUser);
+
         setUser(currentUser);
-      } catch {
-        // Network error or Appwrite misconfiguration
+      } catch (err) {
+        console.error("Auth error:", err);
         setUser(null);
       } finally {
         setLoading(false);

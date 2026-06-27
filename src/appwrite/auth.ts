@@ -17,11 +17,14 @@ import type { AppUser } from '@/types'
  * @param failureUrl - Where Appwrite redirects on auth failure
  */
 export async function signInWithGoogle(
-  successUrl = `${window.location.origin}/dashboard`,
+  successUrl = `${window.location.origin}/auth/callback`,
   failureUrl = `${window.location.origin}/auth?error=oauth_failed`,
 ): Promise<void> {
   // createOAuth2Session triggers the full redirect flow.
-  // No return value — browser navigates away.
+  // Success URL points to /auth/callback (not /dashboard directly)
+  // so the app can verify the session before navigating to the app.
+  // This ensures the Appwrite session cookie is set and readable
+  // before ProtectedRoute checks for a user — fixes iOS Safari ITP.
   account.createOAuth2Session(
     OAuthProvider.Google,
     successUrl,

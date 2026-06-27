@@ -155,11 +155,18 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  /* Mobile: padding accounts for BottomNav height + safe area */
+  padding-top: 1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-bottom: calc(72px + env(safe-area-inset-bottom) + 1rem);
 }
 
 @media (min-width: 1024px) {
   .layout-main {
+    padding-top: 1.5rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
     padding-bottom: 1.5rem;
   }
 }
@@ -488,16 +495,9 @@
 }
 
 .page-wrapper.compact {
+  /* Horizontal padding is handled by layout-main to avoid double-padding.
+     max-width constrains content on very wide screens. */
   max-width: 64rem;
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-
-@media (min-width: 1024px) {
-  .page-wrapper.compact {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-  }
 }
 
 /* ── SECTION CARD ──────────────────────────────────────────── */
