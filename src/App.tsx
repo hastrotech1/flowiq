@@ -8,6 +8,7 @@ import { PageErrorBoundary } from '@/components/ui/ErrorBoundary'
 
 // ── Lazy-load all pages for code-splitting ─────────────────
 const AuthPage         = lazy(() => import('@/pages/Auth'))
+const AuthCallbackPage = lazy(() => import('@/pages/AuthCallback'))
 const DashboardPage    = lazy(() => import('@/pages/Dashboard'))
 const StatementsPage   = lazy(() => import('@/pages/Statements'))
 const TransactionsPage = lazy(() => import('@/pages/Transactions'))
@@ -71,6 +72,8 @@ export default function App() {
           <Routes>
             {/* ── Public ── */}
             <Route path={ROUTES.auth} element={<AuthPage />} />
+            {/* OAuth callback — verifies Appwrite session before navigating to app */}
+            <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
             {/* ── Root redirect ── */}
             <Route path="/" element={<Navigate to={ROUTES.dashboard} replace />} />

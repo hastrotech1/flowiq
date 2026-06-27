@@ -62,6 +62,7 @@ export async function completeStatementImport(
   const periodEnd = new Date(Math.max(...dates)).toISOString();
 
   try {
+    // saveTransactions returns committed IDs but we re-fetch from DB below
     await saveTransactions(transactions.map(toPersistedTransaction));
     const updated = await updateStatement(statement.id, {
       transactionCount: transactions.length,

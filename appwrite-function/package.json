@@ -1,0 +1,11 @@
+{
+  "name": "flowiq-ai-proxy",
+  "version": "1.0.0",
+  "description": "Appwrite Function — secure Anthropic API proxy for FlowIQ",
+  "type": "module",
+  "main": "src/main.js",
+  "engines": { "node": ">=18.0.0" },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.0"
+  }
+}
